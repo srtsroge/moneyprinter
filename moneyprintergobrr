@@ -1,0 +1,75 @@
+'''
+clicker game
+make a USD counter
+make a button
+you earn USD for every click
+when you have enough USD you can unlock new nodes to automatically generate USD!
+'''
+
+
+
+from ursina import *
+
+app = Ursina()
+window.color = color._20
+window.title = 'Money Printer Go BRRRRRR'
+
+
+USD = 0
+USD_goal = 6000000000
+
+trump = Sprite('trump',x=5, y=0.5, scale=0.5)
+trump_text = Text(text='Print me ' + str(USD_goal) + " dollars, or you're fired!", y=0.45, scale=1.5)
+
+counter = Text(text='0 USD', y=.25, z=-1, scale=2, origin=(0,0), background=True)
+button = Button(text='Print USD', color=color.azure, scale= .125)
+
+def button_click():
+    global USD
+    USD += 50
+    counter.text = str(USD) + ' USD'
+
+button.on_click = button_click
+
+
+
+button_2 = Button(cost=100, x=.2, scale=.125, color=color.dark_gray, disabled=True)
+button_2.tooltip = Tooltip(f'<USD>Kidnap and Enslave Federal Worker\n<default>Prints 10 USD every second.\nCosts {button_2.cost} USD.')
+
+def buy_auto_USD():
+    global USD
+    if USD >= button_2.cost:
+        USD -= button_2.cost
+        counter.text = str(USD) + ' USD'
+        invoke(auto_generate_USD, 1, 1)
+
+button_2.on_click = buy_auto_USD
+
+
+
+def auto_generate_USD(value=10, interval=1):
+    global USD
+    USD += 10
+    counter.text = str(USD) + ' USD'
+    button_2.animate_scale(.125 * 1.1, duration=.1)
+    button_2.animate_scale(.125, duration=.1, delay=.1)
+    invoke(auto_generate_USD, value, delay=interval)
+
+
+def update():
+    global USD
+    global USD_goal
+    global trump_text
+    if USD >= USD_goal:
+        trump_text.text = 'Thanks Fed'
+
+    for b in (button_2, ):
+        if USD >= b.cost:
+            b.disabled = False
+            b.color = color.green
+        else:
+            b.disabled = True
+            b.color = color.gray
+
+
+app.run()
